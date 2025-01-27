@@ -1,7 +1,6 @@
 import { Request, Response, Router } from "express";
 import { Customer, Miel } from "..";
-import authenticationMiddleware from "../middleware/middleware_connexion";
-import 'dotenv/config';
+import { stringify } from "querystring";
 
 export const mielRouter = Router();
 
@@ -9,8 +8,9 @@ export const mielRouter = Router();
 mielRouter.post("/miels", async (req: Request, res: Response) => {  
   try {
     
-    const { nom ,bio, tag_id } = req.body;
-    if (!nom || !bio || !tag_id ) {
+    const { nom ,description,prix } = req.body;
+
+    if (!nom || !description || !prix ) {
         return res
           .status(400)
           .json({
@@ -18,19 +18,14 @@ mielRouter.post("/miels", async (req: Request, res: Response) => {
           });
       }
 
-      const existingMiel = await Customer.findOne({ where: { nom } });
-
+    const existingMiel = await Miel.findOne({ where: { nom } });
+    
     if (existingMiel) {
       return res.status(409).json({ error: "Ce miel existe déjà" });
     }
-
-    const miel = await Miel.findOne({ where: { tag:tag_id } });
-
-    if (!miel) {
-      return res.status(401).json({ error: "Manque d'infos" });
-    }
-
-    const newMiel = await Customer.create({nom,bio,tag_id });
+    
+    const newMiel = await Miel.create({nom,description,prix });
+    console.log(newMiel);
     
     res.status(200).json({ message: "miel ajouté", newMiel });
   } catch (error) {
@@ -40,74 +35,79 @@ mielRouter.post("/miels", async (req: Request, res: Response) => {
 
 
 //chercher un miel
-mielRouter.get("/miels/:id", authenticationMiddleware, async (req, res) => {
-    //@ts-ignore
-  const miel = await Miel.findOne({ where: { id: req.miel.nom } });
-  if (miel) {
-    const miel: { nom: string; bio: boolean; tag_id: number }[] = {
-    //@ts-ignore
-      nom: miel.nom,
-    //@ts-ignore
-      bio: miel.bio,
-    //@ts-ignore
-     tag_id:miel.tag_id
-    };
-    res.json(miel);
-  } else {
-    res.status(401).json({ error: "Utilisateur non authentifié" });
+mielRouter.get("/miels/:id", async (req, res) => {
+  try {
+    const mielID = req.params.id;
+
+    const miel = await Miel.findOne({ where: { id: mielID } });
+
+    if (miel) {
+      res.json({
+        nom: miel.nom,
+        description: miel.description,
+        tag_id: miel.tag_id
+      });
+    } else {
+      res.status(404).json({ error: "Miel non trouvé" });
+    }
+  } catch (error) {
+    console.error("Erreur lors de la récupération du miel :", error);
+    res.status(500).json({ error: "Erreur interne du serveur" });
   }
-},
+});
+
 
 ///chercher tout les miels
-mielRouter.get("/miels", authenticationMiddleware, (req, res) => {
+mielRouter.get("/miels", async (req, res) => {
   try {
-    const miel = Miel.findAll
-    res.json(miel);
+    const miels = await Miel.findAll();
+    res.json(miels);
   } catch (error) {
-      console.error("Erreur lors de la récupération des catégories :", error);
-      res.status(500).json({ error: "Erreur interne du serveur" });
-    }
+    console.error("Erreur lors de la récupération des miels :", error);
+    res.status(500).json({ error: "Erreur interne du serveur" });
   }
-  ,
-  ///modifier miel
-  mielRouter.put("/:id",authenticationMiddleware, async (req, res) => {
+});
+
+
+  mielRouter.put("/miels/:id/prix/:prix", async (req, res) => {
     try {
       const mielID = req.params.id;
-      const { nom, bio } = req.body;
+      const prix = req.params.prix;
+      const { nom, description } = req.body;
   
-      if (!nom || !bio) {
-        return res
-          .status(400)
-          .json({
-            error:
-              "Veuillez fournir le nom et si le miel est bio.",
-          });
+      const prixn = parseInt(prix)
+      if (isNaN(prixn)) {
+        return res.status(400).json({ error: "'prix' doit être un nombre valide" });
       }
   
-      const categoryToUpdate = await Miel.findByPk(mielID);
+      const mielToUpdate = await Miel.findByPk(mielID);
   
-      if (categoryToUpdate) {
-        await categoryToUpdate.update({ nom, bio });
-        res
-          .status(200)
-          .json({ message: "Le miel a été modifiée avec succès." });
-      } else {
-        res.status(404).json({ error: "La catégorie n'a pas été trouvée." });
+      if (!mielToUpdate) {
+        return res.status(404).json({ error: "Le miel n'a pas été trouvé." });
       }
+
+      mielToUpdate.prix = prix;
+      if (nom) mielToUpdate.nom = nom;
+      if (description) mielToUpdate.description = description;
+  
+      await mielToUpdate.save();
+  
+      res.status(200).json({
+        message: "Le miel a été modifié avec succès.",
+        updatedMiel: mielToUpdate
+      });
     } catch (error) {
-      console.error(
-        "Erreur lors de la modification de la catégorie par ID :",
-        error,
-      );
+      console.error("Erreur lors de la modification du miel :", error);
       res.status(500).json({ error: "Erreur interne du serveur" });
     }
-
-}),
-mielRouter.delete("/:id",authenticationMiddleware, async (req, res) => {
+  }),
+  
+mielRouter.delete("/miels/:id", async (req, res) => {
     try {
       const mielID = req.params.id;
       const mielToDelete = await Miel.findByPk(mielID);
-  
+      
+      
       if (!mielToDelete) {
         return res.status(404).json({ error: "miel non trouvée." });
       }

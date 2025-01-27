@@ -1,0 +1,23 @@
+@base_url= http://localhost:3102
+
+GET {{base_url}}/miels/1
+###
+POST {{base_url}}/miels
+Content-Type: application/json
+
+{
+  "nom": "Jodfdfhddjn",
+  "description":"1",
+  "prix":10
+}
+###
+PUT {{base_url}}/miels/1/prix/10
+Content-Type: application/json
+
+{
+  "nom": "Jodhjdn",
+  "description":"1"
+  }
+###
+DELETE {{base_url}}/miels/1
+Content-Type: application/json

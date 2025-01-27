@@ -8,7 +8,7 @@ export const MielModel = (sequelize: Sequelize) => {
             autoIncrement: true
         },
         nom:DataTypes.STRING,
-        bio: DataTypes.BOOLEAN,
-        tag_id: DataTypes.INTEGER
+        description: DataTypes.STRING,
+        prix: DataTypes.INTEGER
     });
 };
