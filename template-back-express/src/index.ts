@@ -10,6 +10,8 @@ app.use(cors());
 
 import { CustomerModel } from "./models/customer";
 import { BlackListModel } from "./models/black_list";
+import { MielModel } from "./models/miel";
+
 
 export const sequelize = new Sequelize({
   dialect: 'sqlite',
@@ -18,6 +20,8 @@ export const sequelize = new Sequelize({
 
 export const Customer = CustomerModel(sequelize);
 export const BlackList = BlackListModel(sequelize);
+export const Miel = MielModel(sequelize);
+
 
 
 //sequelize.sync({ force: true });
