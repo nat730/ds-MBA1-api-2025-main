@@ -13,12 +13,13 @@ authRouter.post("/me-connecter", async (req: Request, res: Response) => {
     
     const { username, password } = req.body;
     const user = await Customer.findOne({ where: { username:username } });
-
+      //@ts-ignore
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "Identifiants invalides" });
     }
 
     const jwtToken = jwt.sign(
+      //@ts-ignore
       { userId: user.id},
       process.env.JWT_SECRET!,
     );      
