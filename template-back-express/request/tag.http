@@ -1,0 +1,7 @@
+@base_url= http://localhost:3102
+POST {{base_url}}/tags
+Content-Type: application/json
+
+{
+  "tag": "John"
+}
