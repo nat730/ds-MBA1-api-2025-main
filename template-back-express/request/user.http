@@ -1,4 +1,5 @@
 @base_url= http://localhost:3102
+@token= eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTczNzk3OTg2MH0.kBvNIf76S5rkCp9AHjzll4NXBu8FzdJb8tbGHfW3HIw
 POST {{base_url}}/local/register
 Content-Type: application/json
 
@@ -9,7 +10,7 @@ Content-Type: application/json
 ###
 POST {{base_url}}/api/auth/local/logout
 Content-Type: application/json
-Authorization: Bearer {{$dotenv Token}}
+Authorization: Bearer {{token}}
 ###
 POST {{base_url}}/me-connecter
 Content-Type: application/json
@@ -22,3 +23,11 @@ Content-Type: application/json
 ###
 
 GET {{base_url}}/
+###
+
+POST {{base_url}}/tags
+Content-Type: application/json
+
+{
+  "tag": "John"
+}
